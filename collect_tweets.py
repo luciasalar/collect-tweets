@@ -18,79 +18,78 @@ def load_experiment(path_to_experiment):
 class CollectTweets:
     """Collect posts via pushshift."""
 
-    def __init__(self):
+    def __init__(self, datapath, outputPath, handlesFile, number_of_tweets):
         '''define the main path'''
-        self.datapath = '/disk/data/share/s1690903/collect_tweets/data/'
+        self.datapath = datapath #input path
+        self.outputPath = outputPath # output path
+        self.handlesFile = handlesFile
+        self.count = number_of_tweets
 
-
-    # def __get_date(self, time):
-    #     """convert timestamp to time"""
-
-    #     t = datetime.datetime.fromtimestamp(time)
-    #     return t.strftime('%m/%d/%Y/%H:%M:%S')
 
     def ___handles(self, filename):
-        """Read post id files"""
+        """Read handle files"""
 
-        handles = pd.read_csv(self.datapath + filename)#'Anxiety_postid.csv'
+        handles = pd.read_csv(self.datapath + filename) 
         return handles
 
-    def collect_tweets(self, handlesFile, outputfile):
+    def collect_tweets(self):
         """Collect Tweets"""
 
         # read handle list
-        handles = self.___handles(handlesFile)
+        handles = self.___handles(self.handlesFile)
 
         # variable names
-        file_exists = os.path.isfile(self.datapath + outputfile)
+        file_exists = os.path.isfile(self.outputPath + '{}_tweets.csv'.format(self.handlesFile))
 
         if not file_exists:
-            f = open(self.datapath + outputfile, 'a', encoding='utf-8-sig')
+            f = open(self.outputPath + '{}_tweets.csv'.format(self.handlesFile), 'a', encoding='utf-8-sig')
             writer_top = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            writer_top.writerow(["user_id"] + ["tweet_id"] + ["text"] + ["created_at"] + ["retweet_count"] + ["favorited"]+["favorite_count"] + ["retweeted"] + ['hashtags'] + ['mention_screen_name'] + ['mention_name'] + ['mention_id'] + ['in_reply_to_user_id'] + ['in_reply_to_status_id']  + ['coordinates']  + ['quoted_status_id_str'] + ['reply_count'] + ['quote_count'] + ['language'])
+            writer_top.writerow(["user_name"] + ["user_id"] + ["tweet_id"] + ["text"] + ["created_at"] + ["retweet_count"] + ["favorited"]+["favorite_count"] + ["retweeted"] + ['hashtags'] + ['mention_screen_name'] + ['mention_name'] + ['mention_id'] + ['in_reply_to_user_id'] + ['in_reply_to_status_id']  + ['coordinates']  + ['quoted_status_id_str'] + ['reply_count'] + ['quote_count'] + ['language'])
             f.close()
         
         # query timeline for each handle
         if file_exists:
-            f = open(self.datapath + outputfile, 'a', encoding='utf-8-sig')
+            f = open(self.outputPath + '{}_tweets.csv'.format(self.handlesFile), 'a', encoding='utf-8-sig')
             writer_top = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
             for handle in handles.handles:
-                tweets = api.user_timeline(screen_name=handle, count=100, include_rts=True)
-                for tweet in tweets:
-                    # print(tweet.text)
+                cursor = tw.Cursor(api.user_timeline, screen_name=handle)
+                for tweet in cursor.items():
+                #tweets = api.user_timeline(screen_name=handle, count=self.count, include_rts=True)
+                    #for tweet in tweets:
+                        # print(tweet.text)
                     if len(tweet.entities['hashtags']) > 0:# get hashtags
                         if len(tweet.entities['user_mentions']) > 0:  # get user mention names
-                            content = [[tweet.user.id_str, tweet.id_str, tweet.text, tweet.created_at, tweet.retweet_count, tweet.favorited, tweet.favorite_count, tweet.retweeted, tweet.entities['hashtags'][0]['text'], tweet.entities['user_mentions'][0]['screen_name'], tweet.entities['user_mentions'][0][ 'name'], tweet.entities['user_mentions'][0]['id'], tweet.in_reply_to_user_id_str, tweet.in_reply_to_status_id_str, tweet.lang]]
+                            content = [[handle, tweet.user.id_str, tweet.id_str, tweet.text, tweet.created_at, tweet.retweet_count, tweet.favorited, tweet.favorite_count, tweet.retweeted, tweet.entities['hashtags'][0]['text'], tweet.entities['user_mentions'][0]['screen_name'], tweet.entities['user_mentions'][0][ 'name'], tweet.entities['user_mentions'][0]['id'], tweet.in_reply_to_user_id_str, tweet.in_reply_to_status_id_str, tweet.lang]]
 
                             writer_top.writerows(content)
                     else:
-                        content = [[tweet.user.id_str, tweet.id_str, tweet.text, tweet.created_at, tweet.retweet_count, tweet.favorited,tweet.favorite_count, tweet.retweeted, None, None, None, None, tweet.in_reply_to_user_id_str, tweet.in_reply_to_status_id_str, tweet.lang]]
+                        content = [[handle, tweet.user.id_str, tweet.id_str, tweet.text, tweet.created_at, tweet.retweet_count, tweet.favorited, tweet.favorite_count, tweet.retweeted, None, None, None, None, tweet.in_reply_to_user_id_str, tweet.in_reply_to_status_id_str, tweet.lang]]
                         writer_top.writerows(content)
 
             f.close()
-            # gc.collect()
-            return tweets
+            gc.collect() 
+            return cursor
 
 
-    def collect_user(self, handlesFile, outputfile):
+    def collect_user(self):
         """Colect user profile"""
 
         # read handle list
-        handles = self.___handles(handlesFile)
+        handles = self.___handles(self.handlesFile)
 
         # variable names
-        file_exists = os.path.isfile(self.datapath + outputfile)
+        file_exists = os.path.isfile(self.outputPath + '{}_profile.csv'.format(self.handlesFile))
 
         if not file_exists:
-            f = open(self.datapath + outputfile, 'a', encoding='utf-8-sig')
+            f = open(self.outputPath + '{}_profile.csv'.format(self.handlesFile), 'a', encoding='utf-8-sig')
             writer_top = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
             writer_top.writerow(["user_id"] + ["screen_name"] + ["location"] + ["user_description"] + ["followers_count"] + ["friends_count"] + ["account_created_at"] + ["favourites_count"] + ["statuses_count"] + ["user_url"] + ["listed_count"] + ["protected"] + ["verified"])
             f.close()
 
         # query user profile for each handle
         if file_exists:
-            f = open(self.datapath + outputfile, 'a', encoding='utf-8-sig')
+            f = open(self.outputPath + '{}_profile.csv'.format(self.handlesFile), 'a', encoding='utf-8-sig')
             writer_top = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
             for handle in handles.handles:
@@ -105,10 +104,7 @@ class CollectTweets:
      
 
 
-#tweet.id_str  tweet id
-
-
-#load environment
+#load environment, change env path
 evn_path = '/disk/data/share/s1690903/collect_tweets/environment/'
 env = load_experiment(evn_path + 'env.yaml')
 
@@ -118,9 +114,18 @@ auth.set_access_token(env['twitter_api']['access_token'], env['twitter_api']['ac
 api = tw.API(auth, wait_on_rate_limit=True)
 
 
-collect = CollectTweets()
-#tweets = collect.collect_tweets('handles.csv', 'tweets/test.csv')
-Users = collect.collect_user('handles.csv', 'tweets/test_profile.csv')
+inputP = '/disk/data/share/s1690903/collect_tweets/data/'
+outputP = '/disk/data/share/s1690903/collect_tweets/data/tweets/'
+handles = 'handle_list_1.csv'
+number_of_tweets = 5000
+
+collect = CollectTweets(inputP, outputP, handles, number_of_tweets)
+#collect tweets
+tweets = collect.collect_tweets()#change input handles
+#collect author profile
+#Users = collect.collect_user()#change input handles
+
+
 
 # name = 'CAPYBARA_MAN'
 # tweet_id = '1368145982958020000'

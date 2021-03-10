@@ -18,18 +18,16 @@ def load_experiment(path_to_experiment):
 class CollectTweets:
     """Collect posts via pushshift."""
 
-    def __init__(self, datapath, outputPath, handlesFile, number_of_tweets):
+    def __init__(self, datapath, outputPath, handlesFile):
         '''define the main path'''
-        self.datapath = datapath #input path
-        self.outputPath = outputPath # output path
+        self.datapath = datapath# input path
+        self.outputPath = outputPath# output path
         self.handlesFile = handlesFile
-        self.count = number_of_tweets
-
 
     def ___handles(self, filename):
         """Read handle files"""
 
-        handles = pd.read_csv(self.datapath + filename) 
+        handles = pd.read_csv(self.datapath + filename)
         return handles
 
     def collect_tweets(self):
@@ -52,12 +50,12 @@ class CollectTweets:
             f = open(self.outputPath + '{}_tweets.csv'.format(self.handlesFile), 'a', encoding='utf-8-sig')
             writer_top = csv.writer(f, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
+            # read each handle
             for handle in handles.handles:
-                cursor = tw.Cursor(api.user_timeline, screen_name=handle)
+                #collect max num of post from user timeline
+                cursor = tw.Cursor(api.user_timeline, screen_name=handle) 
                 for tweet in cursor.items():
                 #tweets = api.user_timeline(screen_name=handle, count=self.count, include_rts=True)
-                    #for tweet in tweets:
-                        # print(tweet.text)
                     if len(tweet.entities['hashtags']) > 0:# get hashtags
                         if len(tweet.entities['user_mentions']) > 0:  # get user mention names
                             content = [[handle, tweet.user.id_str, tweet.id_str, tweet.text, tweet.created_at, tweet.retweet_count, tweet.favorited, tweet.favorite_count, tweet.retweeted, tweet.entities['hashtags'][0]['text'], tweet.entities['user_mentions'][0]['screen_name'], tweet.entities['user_mentions'][0][ 'name'], tweet.entities['user_mentions'][0]['id'], tweet.in_reply_to_user_id_str, tweet.in_reply_to_status_id_str, tweet.lang]]
@@ -117,7 +115,7 @@ api = tw.API(auth, wait_on_rate_limit=True)
 inputP = '/disk/data/share/s1690903/collect_tweets/data/'
 outputP = '/disk/data/share/s1690903/collect_tweets/data/tweets/'
 handles = 'handle_list_1.csv'
-number_of_tweets = 5000
+
 
 collect = CollectTweets(inputP, outputP, handles, number_of_tweets)
 #collect tweets

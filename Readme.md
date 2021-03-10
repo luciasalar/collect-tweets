@@ -2,7 +2,14 @@
 
 #Folders and Files
 
+collect_tweets.py: collect max (N = 3200) tweets from user timeline using api v1, lib: tweepy
+
+collect_tweets_api2.py: collect all tweets from each account using api v2. This is a scrappy script, you need to adjust the sleep time if the limit rate has been changed
+
+collect_comments.py: collect max (N = 500) replies from each tweet
+
 env: environment folders, keys, model parameters. These files are in local dir
+
 data: tweet 
 
 # Retrieve timeline
@@ -93,6 +100,31 @@ created_at: The UTC datetime that the user account was created on Twitter.
 dervived: Provides the Profile Geo Enrichment metadata. {"locations": [{"country":"United States","country_code":"US","locality":"Denver"}]}
 
 protected: When true, indicates that this user has chosen to protect their Tweets
+
+# Getting comments
+We use v2 to get comments, here's the data dictionary of v2
+https://developer.twitter.com/en/docs/twitter-api/data-dictionary/introduction
+
+To retrieve a complete Tweet or user, use a combination of fields and expansions query parameters.
+
+
+https://developer.twitter.com/en/docs/twitter-api/conversation-id
+
+"Identifying relationships between Tweets and understanding conversation threads is a feature of the Twitter API v2 payload and search capabilities.  When Tweets are posted in response to a Tweet (known as a reply), or in response to a reply, there is now a defined conversation_id on each reply, which matches the Tweet ID of the original Tweet that started the conversation. "
+
+The conversation_id can be used as a search query parameter when using either recent search or as an operator within a rule for filtered stream.  Using the operator on its own will result in the entire conversation thread of Tweets being returned in either real time through filtered stream, or paginated in reverse chronological order from recent search.   
+
+
+### cool feature: search endpoints 
+https://developer.twitter.com/en/docs/twitter-api/v1/tweets/search/guides/standard-operators
+https://developer.twitter.com/en/docs/labs/recent-search/guides/search-queries
+
+
+
+
+
+
+
 
 
 

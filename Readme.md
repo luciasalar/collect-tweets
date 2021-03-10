@@ -14,15 +14,15 @@ data: tweet
 
 # Retrieve timeline
 
-The new API has advanced functions in searching tweets, you might not need this function if you plan to collect all the tweets (up to 3200) of a user. We are currently using *API v1.1*
+The new API has advanced functions in searching tweets, you can break the 3200 cap. We are currently using *API v2.0*
 
 Twitter recenlty lauched API v.2, the new api enable you to search tweets in a more precise way. For example, You can set  start_time and end_time and paginating through the full results.
 https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/introduction 
 
-Unfortunately the library that are commonly used by many --Tweepy, doesn't support api2 yet. We can use scraping technqiues to do it, however, the tweepy library is way more convinient 
+Unfortunately the library that are commonly used by many --Tweepy, doesn't support api2 yet. We can use scraping technqiues to do it, however, the tweepy library is way more convinient. collect_tweets_api2.py and collect_comments.py are using api v2
 
 
-# Data dictionary v1.1
+# Data dictionary 
 https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet
 
 ### timeline object:
@@ -59,8 +59,6 @@ lang: language
 coordinates: Represents the geographic location of this Tweet as reported by the user or client application. 
 place: When present, indicates that the tweet is associated (but not necessarily originating from) a Place 
 
-
-### only available with the Premium and Enterprise tier products
 quote_count: Indicates approximately how many times this Tweet has been quoted by Twitter users
 
 reply_count: Number of times this Tweet has been replied to. Note: This object is only available with the Premium and Enterprise tier products. Note: This object is only available with the Premium and Enterprise tier products.

@@ -2,15 +2,19 @@
 
 #Folders and Files
 
-collect_tweets.py: collect max (N = 3200) tweets from user timeline using api v1, lib: tweepy
+collect_tweets.py: collect max (N = 3200) tweets from user timeline using api v1, lib: tweepy, we use this script to collect **user profile**
 
 collect_tweets_api2.py: collect all tweets from each account using api v2. This is a scrappy script, you need to adjust the sleep time if the limit rate has been changed
 
-collect_comments.py: collect max (N = 500) replies from each tweet
+collect_comments.py: collect comment from conversation id, collect max (N = 500) replies from each tweet. *However, tweets before api2 don't have conversation id, we can't collect conversations in the old posts with this approach*
+
+collect_comments2.py: collect comments by querying "to:handle", we can collect as many comments as we want by defining how many times we want to query "search all". But we don't know how many comments an account has, so we can only estimate the number of loops we want by checking the comment date
 
 env: environment folders, keys, model parameters. These files are in local dir
 
-data: tweet 
+data: tweets, profile, comments
+
+**The output files are stored in both Json and csv format, if in the later stage you need more variables for the csv format, you can always retrieve them from the Json dump**
 
 # Retrieve timeline
 
@@ -112,6 +116,7 @@ https://developer.twitter.com/en/docs/twitter-api/conversation-id
 
 The conversation_id can be used as a search query parameter when using either recent search or as an operator within a rule for filtered stream.  Using the operator on its own will result in the entire conversation thread of Tweets being returned in either real time through filtered stream, or paginated in reverse chronological order from recent search.   
 
+### The conversation id is only added in the recent few months, we can't retrieve conversation in older dates, therefore, we will try @reply to
 
 ### cool feature: search endpoints 
 https://developer.twitter.com/en/docs/twitter-api/v1/tweets/search/guides/standard-operators

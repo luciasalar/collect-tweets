@@ -39,13 +39,15 @@ class CollectReplies:
 
         headers = {"Authorization": "Bearer {}".format(self.bearer_token)}
 
-        url = "https://api.twitter.com/2/tweets/search/all?query={}&{}&max_results=500".format(query, self.tweet_fields) #get the most recent 500 replies
+        url = "https://api.twitter.com/2/tweets/search/recent?query={}&{}&max_results=100".format(query, self.tweet_fields) #get the most recent 500 replies
         response = requests.request("GET", url, headers=headers)
 
-        print(response.status_code)
+        #print(response.status_code) 
 
         if response.status_code != 200:
-            raise Exception(response.status_code, response.text)
+            #raise Exception(response.status_code, response.text)
+            time.sleep(120)
+
         return response.json()
 
 
@@ -69,6 +71,7 @@ class CollectReplies:
 
 
             if 'data' in search_result.keys():
+                print('data exist')
                 for tweet in search_result['data']:
 
                     if 'in_reply_to_user_id' in tweet.keys():
@@ -79,10 +82,11 @@ class CollectReplies:
 
                     else:
                         content = [[tweet['text'], tweet['author_id'], tweet['created_at'], tweet['conversation_id'], tweet['id'], tweet['public_metrics']['retweet_count'], tweet['public_metrics']['reply_count'], tweet['public_metrics']['like_count'], tweet['public_metrics']['quote_count'], None, None, None]]
+
                     writer_top.writerows(content)
 
-                f.close()
-                gc.collect()
+            f.close()
+            gc.collect()
 
             return search_result
 
@@ -90,17 +94,17 @@ class CollectReplies:
     def loop_file(self):
         """Loop conversation id according to tweet file """
 
-        conversation_id = self.read_conversation_id()
-        for cid in conversation_id['conversation_id']:
+        # conversation_id = self.read_conversation_id()
+        # for cid in conversation_id['conversation_id'][470::]:
 
-          query = "conversation_id:{}".format(cid)
-          search_result = self.get_tweets(query)
-          time.sleep(5)
+        #   query = "conversation_id:{}".format(cid)
+        #   search_result = self.get_tweets(query)
 
-        # query = 'conversation_id:1368979165085634573'
-        # search_result = self.search_twitter(query)
-        
-        # print('search id:', search_result['data'][-1]['id'])
+        #   print('conversation id:', query)
+        #   time.sleep(2)
+        query = 'conversation_id:1345038502581460000'
+        search_result = self.search_twitter(query)
+    
 
         return search_result
 
@@ -113,7 +117,7 @@ env = load_experiment(evn_path + 'env.yaml')
 
 inputP = '/disk/data/share/s1690903/collect_tweets/data/'
 outputP = '/disk/data/share/s1690903/collect_tweets/data/tweets/'
-cidFile = 'tweets_test_old.csv'
+cidFile = 'tweets_test.csv'
 bearer_token = env['twitter_api']['bearer_token']
 tweet_fields = "tweet.fields=text,author_id,created_at,conversation_id,in_reply_to_user_id,referenced_tweets,public_metrics"
 outputFile = 'tweet_replies.csv'

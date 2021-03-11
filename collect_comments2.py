@@ -7,6 +7,7 @@ import os
 import time
 import pandas as pd
 import time
+import json
 
 
 def load_experiment(path_to_experiment):
@@ -19,7 +20,7 @@ class CollectTweets:
 
     def __init__(self, inputP, outputP, bearer_token, tweet_fields, query, until_id, outputFile):
         '''define the main path'''
-        self.datapath = outputP# input path
+        self.datapath = inputP# input path
         self.outputPath = outputP# output path
         #self.handlesFile = handlesFile
         self.bearer_token = bearer_token
@@ -44,8 +45,8 @@ class CollectTweets:
         #print(response.status_code)
 
         if response.status_code != 200:
-            #raise Exception(response.status_code, response.text)
             time.sleep(60)
+            #raise Exception(response.status_code, response.text)
         return response.json()
 
 
@@ -54,6 +55,8 @@ class CollectTweets:
 
         search_result = self.search_twitter()
 
+       
+        #'{}.csv'.format(self.outputFile)
         file_exists = os.path.isfile(self.outputPath + '{}.csv'.format(self.outputFile))
 
         if not file_exists:
@@ -85,6 +88,9 @@ class CollectTweets:
                 else:
                     content = [[tweet['text'], tweet['author_id'], tweet['created_at'], tweet['conversation_id'], tweet['id'], tweet['public_metrics']['retweet_count'], tweet['public_metrics']['reply_count'], tweet['public_metrics']['like_count'], tweet['public_metrics']['quote_count'], None, None, None]]
                 writer_top.writerows(content)
+
+            f.close()
+            gc.collect()
         return search_result
 
 
@@ -129,10 +135,10 @@ class Loop_files:
 
         for handle, status in zip(handles['screen_name'], handles['statuses_count']):
             # get handle name and pass it to query
-            query = 'from:{}'.format(handle)
+            query = 'to:{}'.format(handle)
 
-            #define how many loops we need in order to collect all the tweets of an account
-            loop_num = (status//500) + 1 
+            #define how many loops, we don't know how many tweet reply this account has, so we get first 5000 replies
+            loop_num = 1000
 
             #get the most recent 10 tweets of an account
             search_result = self.search_twitter_recent(self.bearer_token, query, self.tweet_fields)
@@ -153,7 +159,6 @@ class Loop_files:
             # loop everything
         
             for i in range(1, loop_num + 1):
-
                 print('this is the {} loop'.format(i))
                 # collect tweets using query, for each loop, we get 500 tweets
                 c = CollectTweets(inputP=self.inputP, outputP=self.outputP, bearer_token=self.bearer_token, tweet_fields=self.tweet_fields, query=query, until_id=until_id, outputFile=self.outputFile)
@@ -167,7 +172,8 @@ class Loop_files:
 
                 time.sleep(5)#sleep 10s
 
-                
+                # except Exception:
+                #     time.sleep(60)
                 # if time.time() > timeout:
                 #     time.sleep(20)
                 #     timeout = time.time() + 60*2
@@ -184,18 +190,19 @@ handles = 'handle_list_1.csv'
 bearer_token = env['twitter_api']['bearer_token']
 tweet_fields = "tweet.fields=text,author_id,created_at,conversation_id,in_reply_to_user_id,referenced_tweets,public_metrics"
 handlesFile = 'handle_list_1.csv_profile.csv'
-outputFile='all_tweets'
+outputFile = 'recent_500000_comments'
 
 
-lf = Loop_files(datapath=inputP, outputPath=outputP, token=bearer_token, tweet_fields=tweet_fields, handlesFile=handlesFile,outputFile=outputFile)
-
+lf = Loop_files(datapath=inputP, outputPath=outputP, token=bearer_token, tweet_fields=tweet_fields, handlesFile=handlesFile, outputFile=outputFile)
 lf.big_loop()
 
-#Exception: (429, '{"title":"Too Many Requests","type":"about:blank","status":429,"detail":"Too Many Requests"}')
 
-
-
-#print(json.dumps(json_response, indent=4, sort_keys=True))
+# query = 'to:CAPYBARA_MAN'
+# until_id = '1369786994033852417'
+# c = CollectTweets(inputP=inputP, outputP=outputP, bearer_token=bearer_token, tweet_fields=tweet_fields, query=query, until_id=until_id, outputFile=outputFile)
+#                     #search_result = c.search_twitter()
+# search_result = c.get_tweets() 
+# print(search_result['data'][0])
 
 
 
